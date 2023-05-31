@@ -1,7 +1,6 @@
 open System
 open System.Diagnostics
 open System.IO
-open System.Runtime.CompilerServices
 open System.Text
 open System.Text.RegularExpressions
 open System.Threading
@@ -22,14 +21,14 @@ let clone gitUrl targetDirectory =
     proc.WaitForExit(TimeSpan.MaxValue) |> ignore
     let stdErr = proc.StdErr.ReadAllText(Encoding.UTF8)
     let stdOut = proc.StdOut.ReadAllText(Encoding.UTF8)
-    printfn "%s" stdErr
-    printfn "%s" stdOut
+    printfn $"%s{stdErr}"
+    printfn $"%s{stdOut}"
     stdErr
 
 let readOutputDirectory output =
     Regex
         .Match(output, "\'(?<OutputDirectory>.+?)\'")
-        .Groups.["OutputDirectory"]
+        .Groups["OutputDirectory"]
         .Value
 
 let showConsole =
@@ -45,14 +44,14 @@ let showConsole =
 [<STAThread>]
 let main argv =
     showConsole
-    printfn "%b" (ConsoleConfiguration.AllocConsole())
+    printfn $"%b{ConsoleConfiguration.AllocConsole()}"
 
     let targetDirectory =
         Seq.tryHead argv |> Option.defaultValue @"D:\GIT\"
 
     let gitUrl = Clipboard.GetText()
 
-    printfn "Cloning %s into %s" gitUrl targetDirectory
+    printfn $"Cloning %s{gitUrl} into %s{targetDirectory}"
 
     let outputDirectory =
         (clone gitUrl targetDirectory)
@@ -63,7 +62,7 @@ let main argv =
 
     explorer path
 
-    printfn "Project cloned into %s" path
+    printfn $"Project cloned into %s{path}"
     Thread.Sleep(TimeSpan.FromSeconds(10.))
 
     0

@@ -6,11 +6,14 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <WarningsAsErrors>FS0025</WarningsAsErrors>
+    <ApplicationIcon>CloneProject.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Console.fs" />
     <Compile Include="Program.fs" />
     <Content Include="paket.references" />
+    <Content Include="CloneProject.ico" />
+    <Content Include="CloneProject.png" />
   </ItemGroup>
   <PropertyGroup>
     <NoWarn>$(NoWarn);NU1701</NoWarn>

@@ -10,11 +10,16 @@ open RunProcess
 
 let write name contents = File.WriteAllText(name, contents)
 
+module Process =
+    let start name directory arguments =
+        Process.Start(ProcessStartInfo(name, arguments, WorkingDirectory=directory)).WaitForExit()
+        
+
 let explorer (path: string) =
-    Process.Start("explorer", path).WaitForExit()
+    Process.start "explorer.exe" path path
 
 let fork (path: string) =
-    Process.Start("fork.exe", path).WaitForExit()
+    Process.start "fork.exe" path path  
 
 let clone gitUrl targetDirectory =
     use proc =

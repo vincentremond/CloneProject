@@ -9,9 +9,9 @@
     <ApplicationIcon>CloneProject.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="paket.references" />
     <Compile Include="Console.fs" />
     <Compile Include="Program.fs" />
-    <Content Include="paket.references" />
     <Content Include="CloneProject.ico" />
     <Content Include="CloneProject.png" />
   </ItemGroup>

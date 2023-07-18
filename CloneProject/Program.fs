@@ -12,18 +12,17 @@ let write name contents = File.WriteAllText(name, contents)
 
 module Process =
     let start name directory arguments =
-        Process.Start(ProcessStartInfo(name, arguments, WorkingDirectory=directory)).WaitForExit()
-        
+        Process
+            .Start(ProcessStartInfo(name, arguments, WorkingDirectory = directory))
+            .WaitForExit()
 
-let explorer (path: string) =
-    Process.start "explorer.exe" path path
 
-let fork (path: string) =
-    Process.start "fork.exe" path path  
+let explorer (path: string) = Process.start "explorer.exe" path path
+
+let fork (path: string) = Process.start "fork.exe" path path
 
 let clone gitUrl targetDirectory =
-    use proc =
-        new ProcessHost("git.exe", targetDirectory)
+    use proc = new ProcessHost("git.exe", targetDirectory)
 
     proc.Start($"clone {gitUrl}")
     proc.WaitForExit(TimeSpan.MaxValue) |> ignore
@@ -54,27 +53,21 @@ let main argv =
     showConsole
     printfn $"%b{ConsoleConfiguration.AllocConsole()}"
 
-    let targetDirectory =
-        Seq.tryHead argv |> Option.defaultValue @"D:\GIT\"
+    let targetDirectory = Seq.tryHead argv |> Option.defaultValue @"D:\GIT\"
 
     let gitUrl = Clipboard.GetText()
 
     printfn $"Cloning %s{gitUrl} into %s{targetDirectory}"
 
-    let outputDirectory =
-        (clone gitUrl targetDirectory)
-        |> readOutputDirectory
+    let outputDirectory = (clone gitUrl targetDirectory) |> readOutputDirectory
 
-    let path =
-        Path.Combine(targetDirectory, outputDirectory)
+    let path = Path.Combine(targetDirectory, outputDirectory)
 
     explorer path
-    
+
     fork path
 
     printfn $"Project cloned into %s{path}"
-    10.
-    |> TimeSpan.FromSeconds
-    |> Thread.Sleep
+    10. |> TimeSpan.FromSeconds |> Thread.Sleep
 
     0

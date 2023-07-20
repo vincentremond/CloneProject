@@ -2,11 +2,13 @@ open System
 open System.Diagnostics
 open System.IO
 open System.Text
+open System.Text.Json
 open System.Text.RegularExpressions
 open System.Threading
 open System.Windows.Forms
 open CloneProject
 open RunProcess
+open FSharpPlus
 
 let write name contents = File.WriteAllText(name, contents)
 
@@ -47,15 +49,58 @@ let showConsole =
     | false -> ConsoleConfiguration.SetStdHandle(ConsoleConfiguration.StdOutputHandle, defaultStdout)
     | _ -> ()
 
+let config =
+    lazy
+        (let path = "Targets.json"
+         use file = File.OpenRead(path)
+         JsonSerializer.Deserialize<Map<string, string>>(file))
+
+let tryParseUri (value: string) : Uri option =
+    let mutable uri = null
+
+    match Uri.TryCreate(value, UriKind.Absolute, &uri) with
+    | true -> Some uri
+    | false -> None
+
+let (<!>) (a: 'a option) (b: unit -> 'a option) =
+    match a with
+    | Some a -> Some a
+    | None -> b ()
+
+[<RequireQualifiedAccess>]
+module Uri =
+    let getHost (uri: Uri) = uri.Host
+
+[<RequireQualifiedAccess>]
+module Map =
+    let tryFind' m k = Map.tryFind k m
+
+let deductTargetDirectory (cliParam: string option) (url: string) : string option =
+
+    let tryFindByDomain url _ =
+        url
+        |> tryParseUri
+        |> Option.map Uri.getHost
+        |> Option.bind (config.Value |> Map.tryFind')
+
+    let defaultValue () =
+        "Default" |> (config.Value |> Map.tryFind')
+
+    cliParam <!> (tryFindByDomain url) <!> defaultValue
+
 [<EntryPoint>]
 [<STAThread>]
 let main argv =
     showConsole
     printfn $"%b{ConsoleConfiguration.AllocConsole()}"
 
-    let targetDirectory = Seq.tryHead argv |> Option.defaultValue @"D:\GIT\"
-
     let gitUrl = Clipboard.GetText()
+
+    let targetDirectory =
+        deductTargetDirectory (argv |> Array.tryHead) gitUrl
+        |> Option.defaultWith (fun () -> failwith "No target directory found")
+
+
 
     printfn $"Cloning %s{gitUrl} into %s{targetDirectory}"
 

@@ -3,4 +3,6 @@ RESTRICTION: == net7.0-windows7.0
 NUGET
   remote: https://api.nuget.org/v3/index.json
     FSharp.Core (7.0.300)
+    FSharpPlus (1.4.1)
+      FSharp.Core (>= 6.0.6)
     RunProcess (1.2)

@@ -2,5 +2,6 @@ source https://api.nuget.org/v3/index.json
 
 storage: none
 framework: auto-detect
+nuget FSharpPlus
 nuget RunProcess
 nuget FSharp.Core

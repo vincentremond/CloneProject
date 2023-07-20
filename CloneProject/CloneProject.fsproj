@@ -9,6 +9,9 @@
     <ApplicationIcon>CloneProject.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Targets.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="paket.references" />
     <Compile Include="Console.fs" />
     <Compile Include="Program.fs" />

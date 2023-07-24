@@ -25,7 +25,7 @@ let rider (path: string) =
     Process.start "powershell.exe" path "-Command rider.ps1"
 
 let riderFixConfig (path: string) =
-    Process.start "RiderFixConfig.exe" path ""
+    Process.start "RiderFixConfig.exe" path path
 
 let clone gitUrl targetDirectory =
     use proc = new ProcessHost("git.exe", targetDirectory)
@@ -89,9 +89,9 @@ module Regex =
 module Map =
     let tryFind' m k = Map.tryFind k m
 
-let deductTargetDirectory (cliParam: string option) (url: Uri) : string option =
+let deductTargetDirectory (url: Uri) : string option =
 
-    let tryFindByDomain _ =
+    let tryFindByDomain =
         let host = url |> Uri.getHost
         Map.tryFind host config.Value
 
@@ -99,8 +99,7 @@ let deductTargetDirectory (cliParam: string option) (url: Uri) : string option =
         "Default"
         |> (config.Value |> Map.tryFind')
 
-    cliParam
-    <!> tryFindByDomain
+    tryFindByDomain
     <!> defaultValue
 
 let runAsSTAThread<'a> (f: unit -> 'a): 'a =
@@ -124,7 +123,13 @@ let main argv =
         |> Seq.toList
         |> List.tryRemove "--merge-request"
 
-    let gitUrl = runAsSTAThread Clipboard.GetText
+    let gitUrl =
+        argv
+        |> List.tryExactlyOne
+        |> Option.defaultWith (fun () -> 
+            runAsSTAThread Clipboard.GetText
+        )
+        
     let gitUrl =
         match Uri.TryCreate(gitUrl, UriKind.Absolute) with
         | false, gitUrl -> failwith $"No valid URL found in clipboard %A{gitUrl}"
@@ -141,7 +146,7 @@ let main argv =
             gitUrl
 
     let targetDirectory =
-        deductTargetDirectory (argv |> List.tryHead) gitUrl
+        deductTargetDirectory gitUrl
         |> Option.defaultWith (fun () -> failwith "No target directory found")
 
     printfn $"Cloning %s{string gitUrl} into %s{targetDirectory}"
@@ -152,7 +157,7 @@ let main argv =
 
     let path = Path.Combine(targetDirectory, outputDirectory)
     
-    
+    riderFixConfig path
 
     if mergeRequest then
         rider path

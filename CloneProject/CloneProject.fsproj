@@ -6,7 +6,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <WarningsAsErrors>FS0025</WarningsAsErrors>
-    <ApplicationIcon>CloneProject.ico</ApplicationIcon>
+    <ApplicationIcon>icon-code-compare.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <None Include="Targets.json">
@@ -14,8 +14,8 @@
     </None>
     <None Include="paket.references" />
     <Compile Include="Program.fs" />
-    <Content Include="CloneProject.ico" />
-    <Content Include="CloneProject.png" />
+    <Content Include="icon-code-compare.png" />
+    <Content Include="icon-code-compare.ico" />
   </ItemGroup>
   <PropertyGroup>
     <NoWarn>$(NoWarn);NU1701</NoWarn>

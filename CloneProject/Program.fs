@@ -24,6 +24,9 @@ let fork (path: string) = Process.start "fork.exe" path path
 let rider (path: string) =
     Process.start "powershell.exe" path "-Command rider.ps1"
 
+let wt (path: string) =
+    Process.start "wt.exe" path $"-d {path}"
+
 let riderFixConfig (path: string) =
     Process.start "RiderFixConfig.exe" path path
 
@@ -165,6 +168,8 @@ let main argv =
 
         explorer path
         fork path
+        rider path
+        wt path
 
     printfn $"Project cloned into %s{path}"
 

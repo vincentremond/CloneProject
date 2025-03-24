@@ -13,9 +13,7 @@ let write name (contents: string) = File.WriteAllText(name, contents)
 
 module Process =
     let start name directory (arguments: string) =
-        Process
-            .Start(ProcessStartInfo(name, arguments, WorkingDirectory = directory))
-            .WaitForExit()
+        Process.Start(ProcessStartInfo(name, arguments, WorkingDirectory = directory)).WaitForExit()
 
 let explorer (path: string) = Process.start "explorer.exe" path path
 
@@ -44,10 +42,7 @@ let clone gitUrl targetDirectory =
     stdErr
 
 let readOutputDirectory output =
-    Regex
-        .Match(output, "\'(?<OutputDirectory>.+?)\'")
-        .Groups["OutputDirectory"]
-        .Value
+    Regex.Match(output, "\'(?<OutputDirectory>.+?)\'").Groups["OutputDirectory"].Value
 
 let rec tryLocateFile name directory =
     Directory.GetFiles(directory, name)

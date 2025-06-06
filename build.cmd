@@ -3,4 +3,4 @@
 dotnet tool restore
 dotnet build -- %*
 
-add-to-path CloneProject\bin\Debug\
+AddToPath .\CloneProject\bin\Debug\

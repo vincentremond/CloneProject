@@ -9,13 +9,11 @@ open System.Windows.Forms
 open RunProcess
 open FSharpPlus
 
-let write name contents = File.WriteAllText(name, contents)
+let write name (contents: string) = File.WriteAllText(name, contents)
 
 module Process =
-    let start name directory arguments =
-        Process
-            .Start(ProcessStartInfo(name, arguments, WorkingDirectory = directory))
-            .WaitForExit()
+    let start name directory (arguments: string) =
+        Process.Start(ProcessStartInfo(name, arguments, WorkingDirectory = directory)).WaitForExit()
 
 let explorer (path: string) = Process.start "explorer.exe" path path
 
@@ -35,8 +33,7 @@ let clone gitUrl targetDirectory =
 
     proc.Start($"clone {gitUrl}")
 
-    proc.WaitForExit(TimeSpan.MaxValue)
-    |> ignore
+    proc.WaitForExit(TimeSpan.MaxValue) |> ignore
 
     let stdErr = proc.StdErr.ReadAllText(Encoding.UTF8)
     let stdOut = proc.StdOut.ReadAllText(Encoding.UTF8)
@@ -45,10 +42,7 @@ let clone gitUrl targetDirectory =
     stdErr
 
 let readOutputDirectory output =
-    Regex
-        .Match(output, "\'(?<OutputDirectory>.+?)\'")
-        .Groups["OutputDirectory"]
-        .Value
+    Regex.Match(output, "\'(?<OutputDirectory>.+?)\'").Groups["OutputDirectory"].Value
 
 let rec tryLocateFile name directory =
     Directory.GetFiles(directory, name)
@@ -62,7 +56,10 @@ let rec tryLocateFile name directory =
 
 let config =
     lazy
-        (let path = (tryLocateFile "Targets.local.json" Environment.CurrentDirectory) |> Option.defaultValue "Targets.json"
+        (let path =
+            (tryLocateFile "Targets.local.json" Environment.CurrentDirectory)
+            |> Option.defaultValue "Targets.json"
+
          use file = File.OpenRead(path)
          JsonSerializer.Deserialize<Map<string, string>>(file))
 
@@ -99,40 +96,38 @@ let deductTargetDirectory (url: Uri) : string option =
         Map.tryFind host config.Value
 
     let defaultValue () =
-        "Default"
-        |> (config.Value |> Map.tryFind')
+        "Default" |> (config.Value |> Map.tryFind')
 
-    tryFindByDomain
-    <!> defaultValue
+    tryFindByDomain <!> defaultValue
 
-let runAsSTAThread<'a> (f: unit -> 'a): 'a =
+let runAsSTAThread<'a> (f: unit -> 'a) : 'a =
     let mutable result = Unchecked.defaultof<'a>
     let autoResetEvent = new AutoResetEvent(false)
-    let thread = Thread(ThreadStart(fun () ->
-        result <- f()
-        autoResetEvent.Set() |> ignore
-    ))
+
+    let thread =
+        Thread(
+            ThreadStart(fun () ->
+                result <- f ()
+                autoResetEvent.Set() |> ignore
+            )
+        )
+
     thread.SetApartmentState(ApartmentState.STA)
     thread.Start()
     autoResetEvent.WaitOne() |> ignore
-    
+
     result
 
 [<EntryPoint>]
 let main argv =
 
-    let argv, mergeRequest =
-        argv
-        |> Seq.toList
-        |> List.tryRemove "--merge-request"
+    let argv, mergeRequest = argv |> Seq.toList |> List.tryRemove "--merge-request"
 
     let gitUrl =
         argv
         |> List.tryExactlyOne
-        |> Option.defaultWith (fun () -> 
-            runAsSTAThread Clipboard.GetText
-        )
-        
+        |> Option.defaultWith (fun () -> runAsSTAThread Clipboard.GetText)
+
     let gitUrl =
         match Uri.TryCreate(gitUrl, UriKind.Absolute) with
         | false, gitUrl -> failwith $"No valid URL found in clipboard %A{gitUrl}"
@@ -142,9 +137,7 @@ let main argv =
 
     let gitUrl =
         if mergeRequest then
-            gitUrl.ToString()
-            |> Regex.replace "/-/merge_requests/.*$" ".git"
-            |> Uri
+            gitUrl.ToString() |> Regex.replace "/-/merge_requests/.*$" ".git" |> Uri
         else
             gitUrl
 
@@ -154,12 +147,10 @@ let main argv =
 
     printfn $"Cloning %s{string gitUrl} into %s{targetDirectory}"
 
-    let outputDirectory =
-        (clone gitUrl targetDirectory)
-        |> readOutputDirectory
+    let outputDirectory = (clone gitUrl targetDirectory) |> readOutputDirectory
 
     let path = Path.Combine(targetDirectory, outputDirectory)
-    
+
     riderFixConfig path
 
     if mergeRequest then
@@ -173,8 +164,6 @@ let main argv =
 
     printfn $"Project cloned into %s{path}"
 
-    10.
-    |> TimeSpan.FromSeconds
-    |> Thread.Sleep
+    10. |> TimeSpan.FromSeconds |> Thread.Sleep
 
     0

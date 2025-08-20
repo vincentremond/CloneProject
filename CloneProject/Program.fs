@@ -7,26 +7,26 @@ open System.Text.RegularExpressions
 open System.Threading
 open System.Windows.Forms
 open RunProcess
-open FSharpPlus
 
-let write name (contents: string) = File.WriteAllText(name, contents)
+let write path (contents: string) = File.WriteAllText(path, contents)
 
 module Process =
-    let start name directory (arguments: string) =
+    let start name directory (arguments: string list) =
         Process.Start(ProcessStartInfo(name, arguments, WorkingDirectory = directory)).WaitForExit()
 
-let explorer (path: string) = Process.start "explorer.exe" path path
+let explorer (path: string) =
+    Process.start "explorer.exe" path [ path ]
 
-let fork (path: string) = Process.start "fork.exe" path path
+let fork (path: string) = Process.start "fork.exe" path [ path ]
 
 let rider (path: string) =
-    Process.start "powershell.exe" path "-Command rider.ps1"
+    // Process.start "powershell.exe" path [ "-Command"; "rider.ps1" ]
+    Process.start "rider.exe" path [ path ]
 
-let wt (path: string) =
-    Process.start "wt.exe" path $"-d {path}"
+let wt (path: string) = Process.start "wt.exe" path []
 
 let riderFixConfig (path: string) =
-    Process.start "RiderFixConfig.exe" path path
+    Process.start "RiderFixConfig.exe" path [ path ]
 
 let clone gitUrl targetDirectory =
     use proc = new ProcessHost("git.exe", targetDirectory)

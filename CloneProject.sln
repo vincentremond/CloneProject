@@ -10,6 +10,8 @@ ProjectSection(SolutionItems) = preProject
 	paket.dependencies = paket.dependencies
 	paket.lock = paket.lock
 	.editorconfig = .editorconfig
+	PUBLIC = PUBLIC
+	build.ps1 = build.ps1
 EndProjectSection
 EndProject
 Global

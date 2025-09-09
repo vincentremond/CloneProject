@@ -6,13 +6,19 @@ MinimumVisualStudioVersion = 15.0.26124.0
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CloneProject", "CloneProject\CloneProject.fsproj", "{E95B1B82-CFE0-4CDA-8A3C-A8ECE9809724}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{0B626439-57FA-4C8D-B5E3-FDB4DDDCE484}"
-ProjectSection(SolutionItems) = preProject
-	paket.dependencies = paket.dependencies
-	paket.lock = paket.lock
-	.editorconfig = .editorconfig
-	PUBLIC = PUBLIC
-	build.ps1 = build.ps1
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+		paket.lock = paket.lock
+		.editorconfig = .editorconfig
+		PUBLIC = PUBLIC
+		build.ps1 = build.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pinicola.FSharp", "Pinicola.FSharp", "{02A4B33E-B816-DE40-8E36-EB2BC0F2BBB4}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Pinicola.FSharp", "Pinicola.FSharp\Pinicola.FSharp\Pinicola.FSharp.fsproj", "{93DABAE3-2E62-4CC5-A735-B4E656B15260}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Pinicola.FSharp.SpectreConsole", "Pinicola.FSharp\Pinicola.FSharp.SpectreConsole\Pinicola.FSharp.SpectreConsole.fsproj", "{42DB997C-935D-4184-A492-CE1ECEDB3363}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,9 +28,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E95B1B82-CFE0-4CDA-8A3C-A8ECE9809724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -39,5 +42,36 @@ Global
 		{E95B1B82-CFE0-4CDA-8A3C-A8ECE9809724}.Release|x64.Build.0 = Release|Any CPU
 		{E95B1B82-CFE0-4CDA-8A3C-A8ECE9809724}.Release|x86.ActiveCfg = Release|Any CPU
 		{E95B1B82-CFE0-4CDA-8A3C-A8ECE9809724}.Release|x86.Build.0 = Release|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Debug|x64.Build.0 = Debug|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Debug|x86.Build.0 = Debug|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Release|x64.ActiveCfg = Release|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Release|x64.Build.0 = Release|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Release|x86.ActiveCfg = Release|Any CPU
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260}.Release|x86.Build.0 = Release|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Debug|x64.Build.0 = Debug|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Debug|x86.Build.0 = Debug|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Release|x64.ActiveCfg = Release|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Release|x64.Build.0 = Release|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Release|x86.ActiveCfg = Release|Any CPU
+		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{93DABAE3-2E62-4CC5-A735-B4E656B15260} = {02A4B33E-B816-DE40-8E36-EB2BC0F2BBB4}
+		{42DB997C-935D-4184-A492-CE1ECEDB3363} = {02A4B33E-B816-DE40-8E36-EB2BC0F2BBB4}
 	EndGlobalSection
 EndGlobal

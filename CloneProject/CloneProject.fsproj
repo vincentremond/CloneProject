@@ -16,6 +16,10 @@
     <Content Include="icon-code-compare.png" />
     <Content Include="icon-code-compare.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Pinicola.FSharp\Pinicola.FSharp.SpectreConsole\Pinicola.FSharp.SpectreConsole.fsproj" />
+    <ProjectReference Include="..\Pinicola.FSharp\Pinicola.FSharp\Pinicola.FSharp.fsproj" />
+  </ItemGroup>
   <PropertyGroup>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>

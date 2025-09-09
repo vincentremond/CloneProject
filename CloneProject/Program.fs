@@ -6,6 +6,8 @@ open System.Text.Json
 open System.Text.RegularExpressions
 open System.Threading
 open System.Windows.Forms
+open FSharpPlus
+open Pinicola.FSharp
 open RunProcess
 
 let write path (contents: string) = File.WriteAllText(path, contents)
@@ -55,13 +57,25 @@ let rec tryLocateFile name directory =
     )
 
 let config =
+
+    let fixConfigVariable map =
+        let fixes = [ "{{UserProfile}}", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ]
+
+        let rec applyFixes _ (s: string) =
+            fixes
+            |> List.fold (fun acc (oldValue, replacement) -> acc |> String.replace oldValue replacement) s
+
+        map |> Map.map applyFixes
+
     lazy
         (let path =
             (tryLocateFile "Targets.local.json" Environment.CurrentDirectory)
             |> Option.defaultValue "Targets.json"
 
          use file = File.OpenRead(path)
-         JsonSerializer.Deserialize<Map<string, string>>(file))
+         let result = JsonSerializer.Deserialize<Map<string, string>>(file)
+         let fixedConfig = result |> fixConfigVariable
+         fixedConfig)
 
 let (<!>) (a: 'a option) (b: unit -> 'a option) =
     match a with
@@ -91,14 +105,14 @@ module Map =
 
 let deductTargetDirectory (url: Uri) : string option =
 
-    let tryFindByDomain =
-        let host = url |> Uri.getHost
-        Map.tryFind host config.Value
+    let tryFindForUrl =
+        config.Value
+        |> Map.iterTryFindValue (fun k v -> String.startsWithICIC (url.ToString()) k)
 
     let defaultValue () =
         "Default" |> (config.Value |> Map.tryFind')
 
-    tryFindByDomain <!> defaultValue
+    tryFindForUrl <!> defaultValue
 
 let runAsSTAThread<'a> (f: unit -> 'a) : 'a =
     let mutable result = Unchecked.defaultof<'a>
@@ -118,52 +132,66 @@ let runAsSTAThread<'a> (f: unit -> 'a) : 'a =
 
     result
 
+let tryFixGitUrl url =
+    let pattern = @"^https:\/\/(?<User>\w+)@dev\.azure\.com\/(?<Org>\w+)\/"
+    let substitution = @"https://${Org}.visualstudio.com/"
+    let fixedUrl = Regex.Replace(url, pattern, substitution)
+    fixedUrl
+
 [<EntryPoint>]
 let main argv =
+    try
+        let argv, mergeRequest = argv |> Seq.toList |> List.tryRemove "--merge-request"
 
-    let argv, mergeRequest = argv |> Seq.toList |> List.tryRemove "--merge-request"
+        let gitUrl =
+            argv
+            |> List.tryExactlyOne
+            |> Option.defaultWith (fun () -> runAsSTAThread Clipboard.GetText)
 
-    let gitUrl =
-        argv
-        |> List.tryExactlyOne
-        |> Option.defaultWith (fun () -> runAsSTAThread Clipboard.GetText)
+        let gitUrl = tryFixGitUrl gitUrl
 
-    let gitUrl =
-        match Uri.TryCreate(gitUrl, UriKind.Absolute) with
-        | false, gitUrl -> failwith $"No valid URL found in clipboard %A{gitUrl}"
-        | true, gitUrl ->
-            printfn $"Cloning project from %s{gitUrl.ToString()}"
-            gitUrl
+        let gitUrl =
+            match Uri.TryCreate(gitUrl, UriKind.Absolute) with
+            | false, gitUrl -> failwith $"No valid URL found in clipboard %A{gitUrl}"
+            | true, gitUrl ->
+                printfn $"Cloning project from %s{gitUrl.ToString()}"
+                gitUrl
 
-    let gitUrl =
+        let gitUrl =
+            if mergeRequest then
+                gitUrl.ToString() |> Regex.replace "/-/merge_requests/.*$" ".git" |> Uri
+            else
+                gitUrl
+
+        let targetDirectory =
+            deductTargetDirectory gitUrl
+            |> Option.defaultWith (fun () -> failwith "No target directory found")
+
+        printfn $"Cloning %s{string gitUrl} into %s{targetDirectory}"
+
+        let outputDirectory = (clone gitUrl targetDirectory) |> readOutputDirectory
+
+        let path = Path.Combine(targetDirectory, outputDirectory)
+
+        riderFixConfig path
+
         if mergeRequest then
-            gitUrl.ToString() |> Regex.replace "/-/merge_requests/.*$" ".git" |> Uri
+            rider path
         else
-            gitUrl
 
-    let targetDirectory =
-        deductTargetDirectory gitUrl
-        |> Option.defaultWith (fun () -> failwith "No target directory found")
+            explorer path
+            fork path
+            rider path
+            wt path
 
-    printfn $"Cloning %s{string gitUrl} into %s{targetDirectory}"
+        printfn $"Project cloned into %s{path}"
 
-    let outputDirectory = (clone gitUrl targetDirectory) |> readOutputDirectory
+        10. |> TimeSpan.FromSeconds |> Thread.Sleep
 
-    let path = Path.Combine(targetDirectory, outputDirectory)
+        0
 
-    riderFixConfig path
-
-    if mergeRequest then
-        rider path
-    else
-
-        explorer path
-        fork path
-        rider path
-        wt path
-
-    printfn $"Project cloned into %s{path}"
-
-    10. |> TimeSpan.FromSeconds |> Thread.Sleep
-
-    0
+    with ex ->
+        printfn $"Error: %s{ex.Message}"
+        printfn "Press Enter to exit..."
+        Console.ReadLine() |> ignore
+        1

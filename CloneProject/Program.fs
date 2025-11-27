@@ -132,8 +132,10 @@ let runAsSTAThread<'a> (f: unit -> 'a) : 'a =
     result
 
 let urlFixes = [
-    Regex.replace @"^https:\/\/(?<User>\w+)@dev\.azure\.com\/(?<Org>\w+)\/" @"https://${Org}.visualstudio.com/"
-    Regex.replace @"^(?<Value>https://\w+\.visualstudio\.com/)DefaultCollection/" @"${Value}"
+    // https://xxx.visualstudio.com/ -> https://dev.azure.com/xxx/
+    Regex.replace @"https://(?<Organization>\w+)\.visualstudio\.com/" @"https://dev.azure.com/${Organization}/"
+    // https://dev.azure.com/xxx/DefaultCollection/ -> https://dev.azure.com/xxx/DefaultCollection/
+    Regex.replace @"https://dev\.azure\.com/(?<Organization>\w+)/DefaultCollection/" @"https://dev.azure.com/${Organization}/"
 ]
 
 let fixGitUrl url =

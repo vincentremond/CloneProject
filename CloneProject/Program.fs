@@ -6,7 +6,6 @@ open System.Text.Json
 open System.Text.RegularExpressions
 open System.Threading
 open System.Windows.Forms
-open FSharpPlus
 open Pinicola.FSharp
 open RunProcess
 
@@ -107,7 +106,7 @@ let deductTargetDirectory (url: Uri) : string option =
 
     let tryFindForUrl =
         config.Value
-        |> Map.iterTryFindValue (fun k v -> String.startsWithICIC (url.ToString()) k)
+        |> Map.iterTryFindValue (fun k _v -> String.startsWithICIC (url.ToString()) k)
 
     let defaultValue () =
         "Default" |> (config.Value |> Map.tryFind')
@@ -132,11 +131,13 @@ let runAsSTAThread<'a> (f: unit -> 'a) : 'a =
 
     result
 
-let tryFixGitUrl url =
-    let pattern = @"^https:\/\/(?<User>\w+)@dev\.azure\.com\/(?<Org>\w+)\/"
-    let substitution = @"https://${Org}.visualstudio.com/"
-    let fixedUrl = Regex.Replace(url, pattern, substitution)
-    fixedUrl
+let urlFixes = [
+    Regex.replace @"^https:\/\/(?<User>\w+)@dev\.azure\.com\/(?<Org>\w+)\/" @"https://${Org}.visualstudio.com/"
+    Regex.replace @"^(?<Value>https://\w+\.visualstudio\.com/)DefaultCollection/" @"${Value}"
+]
+
+let fixGitUrl url =
+    List.fold (fun url fixer -> fixer url) url urlFixes
 
 [<EntryPoint>]
 let main argv =
@@ -148,7 +149,7 @@ let main argv =
             |> List.tryExactlyOne
             |> Option.defaultWith (fun () -> runAsSTAThread Clipboard.GetText)
 
-        let gitUrl = tryFixGitUrl gitUrl
+        let gitUrl = fixGitUrl gitUrl
 
         let gitUrl =
             match Uri.TryCreate(gitUrl, UriKind.Absolute) with

@@ -9,8 +9,7 @@
     <ApplicationIcon>icon-code-compare.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="Targets.json" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Targets.local.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Targets*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="paket.references" />
     <Compile Include="Program.fs" />
     <Content Include="icon-code-compare.png" />

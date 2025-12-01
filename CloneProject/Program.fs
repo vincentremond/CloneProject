@@ -15,13 +15,11 @@ module Process =
     let start name directory (arguments: string list) =
         Process.Start(ProcessStartInfo(name, arguments, WorkingDirectory = directory)).WaitForExit()
 
-let explorer (path: string) =
-    Process.start "explorer" path [ path ]
+let explorer (path: string) = Process.start "explorer" path [ path ]
 
 let fork (path: string) = Process.start "fork" path [ path ]
 
-let rider (path: string) =
-    Process.start "rider" path [ path ]
+let rider (path: string) = Process.start "rider" path [ path ]
 
 let wt (path: string) = Process.start "wt" path []
 
@@ -134,7 +132,9 @@ let urlFixes = [
     // https://xxx.visualstudio.com/ -> https://dev.azure.com/xxx/
     Regex.replace @"https://(?<Organization>\w+)\.visualstudio\.com/" @"https://dev.azure.com/${Organization}/"
     // https://dev.azure.com/xxx/DefaultCollection/ -> https://dev.azure.com/xxx/DefaultCollection/
-    Regex.replace @"https://dev\.azure\.com/(?<Organization>\w+)/DefaultCollection/" @"https://dev.azure.com/${Organization}/"
+    Regex.replace
+        @"https://dev\.azure\.com/(?<Organization>\w+)/DefaultCollection/"
+        @"https://dev.azure.com/${Organization}/"
 ]
 
 let fixGitUrl url =

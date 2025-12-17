@@ -12,8 +12,9 @@ open RunProcess
 let write path (contents: string) = File.WriteAllText(path, contents)
 
 module Process =
-    let start name directory (arguments: string list) =
-        Process.Start(ProcessStartInfo(name, arguments, WorkingDirectory = directory)).WaitForExit()
+    let start exeShortName directory (arguments: string list) =
+        let exe = Where.findInPath exeShortName
+        Process.Start(ProcessStartInfo(exe.FullName, arguments, WorkingDirectory = directory)).WaitForExit()
 
 let explorer (path: string) = Process.start "explorer" path [ path ]
 
@@ -81,10 +82,7 @@ let (<!>) (a: 'a option) (b: unit -> 'a option) =
 [<RequireQualifiedAccess>]
 module List =
     let tryRemove (value: 'a) (list: 'a list) : 'a list * bool =
-        List.foldBack
-            (fun item (acc, found) -> if item = value then (acc, true) else (item :: acc, found))
-            list
-            ([], false)
+        List.foldBack (fun item (acc, found) -> if item = value then (acc, true) else (item :: acc, found)) list ([], false)
 
 [<RequireQualifiedAccess>]
 module Uri =
@@ -101,9 +99,11 @@ module Map =
 
 let deductTargetDirectory (url: Uri) : string option =
 
+    let strUrl = url.ToString()
+
     let tryFindForUrl =
         config.Value
-        |> Map.iterTryFindValue (fun k _v -> String.startsWithICIC (url.ToString()) k)
+        |> Map.iterTryFindValue (fun k _v -> strUrl |> String.startsWithICIC k)
 
     let defaultValue () =
         "Default" |> (config.Value |> Map.tryFind')
@@ -129,12 +129,12 @@ let runAsSTAThread<'a> (f: unit -> 'a) : 'a =
     result
 
 let urlFixes = [
+    // https://xxxx@dev.azure.com/yyy/xxx/_git/lorem -> https://xxxx@dev.azure.com/yyy/xxx/_git/lorem
+    Regex.replace @"^(?<Before>https:\/\/)(?<User>.+?@)(?<After>dev\.azure\.com\/)" @"${Before}${After}"
     // https://xxx.visualstudio.com/ -> https://dev.azure.com/xxx/
     Regex.replace @"https://(?<Organization>\w+)\.visualstudio\.com/" @"https://dev.azure.com/${Organization}/"
     // https://dev.azure.com/xxx/DefaultCollection/ -> https://dev.azure.com/xxx/DefaultCollection/
-    Regex.replace
-        @"https://dev\.azure\.com/(?<Organization>\w+)/DefaultCollection/"
-        @"https://dev.azure.com/${Organization}/"
+    Regex.replace @"https://dev\.azure\.com/(?<Organization>\w+)/DefaultCollection/" @"https://dev.azure.com/${Organization}/"
 ]
 
 let fixGitUrl url =

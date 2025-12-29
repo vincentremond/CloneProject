@@ -10,6 +10,12 @@
   <ItemGroup>
     <None Include="Targets*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="paket.references" />
+    <Compile Include="Process.fs" />
+    <Compile Include="Configuration.fs" />
+    <Compile Include="ConfigurationLocator.fs" />
+    <Compile Include="ConfigurationReader.fs" />
+    <Compile Include="GitUrlFixer.fs" />
+    <Compile Include="TargetDirectoryService.fs" />
     <Compile Include="Program.fs" />
     <Content Include="icon-code-compare.png" />
     <Content Include="icon-code-compare.ico" />

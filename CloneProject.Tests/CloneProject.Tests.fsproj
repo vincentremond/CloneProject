@@ -10,7 +10,9 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Compile Include="UnitTests.fs" />
+    <Compile Include="GitUrlFixerTests.fs" />
+    <Compile Include="ConfigurationReaderTests.fs" />
+    <Compile Include="TargetDirectoryServiceTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CloneProject\CloneProject.fsproj" />

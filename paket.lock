@@ -4,8 +4,6 @@ NUGET
   remote: https://api.nuget.org/v3/index.json
     coverlet.collector (6.0.4)
     FSharp.Core (10.0.101)
-    FSharpPlus (1.8)
-      FSharp.Core (>= 6.0.6)
     Microsoft.ApplicationInsights (2.23)
       System.Diagnostics.DiagnosticSource (>= 5.0)
     Microsoft.CodeCoverage (18.0.1)

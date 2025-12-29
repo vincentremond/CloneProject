@@ -18,7 +18,7 @@ module Process =
 
 let explorer (path: string) = Process.start "explorer" path [ path ]
 
-let fork (path: string) = Process.start "fork" path [ path ]
+let fork (path: string) = Process.start "fork" path []
 
 let rider (path: string) = Process.start "rider" path [ path ]
 

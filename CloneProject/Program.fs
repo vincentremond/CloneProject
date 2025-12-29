@@ -6,39 +6,39 @@ open System.Text.Json
 open System.Text.RegularExpressions
 open System.Threading
 open Pinicola.FSharp
+open Pinicola.FSharp.RegularExpressions
 open RunProcess
 open TextCopy
 
-let write path (contents: string) = File.WriteAllText(path, contents)
-
+[<RequireQualifiedAccess>]
 module Process =
     let start exeShortName directory (arguments: string list) =
         let exe = Where.findInPath exeShortName
         Process.Start(ProcessStartInfo(exe.FullName, arguments, WorkingDirectory = directory)).WaitForExit()
 
-let explorer (path: string) = Process.start "explorer" path [ path ]
+    let explorer (path: string) = start "explorer" path [ path ]
 
-let fork (path: string) = Process.start "fork" path []
+    let fork (path: string) = start "fork" path []
 
-let rider (path: string) = Process.start "rider" path [ path ]
+    let rider (path: string) = start "rider" path [ path ]
 
-let wt (path: string) = Process.start "wt" path []
+    let wt (path: string) = start "wt" path []
 
-let riderFixConfig (path: string) =
-    Process.start "RiderFixConfig" path [ path ]
+    let riderFixConfig (path: string) =
+        start "RiderFixConfig" path [ path ]
 
-let clone gitUrl targetDirectory =
-    use proc = new ProcessHost("git", targetDirectory)
+    let gitClone gitUrl targetDirectory =
+        use proc = new ProcessHost("git", targetDirectory)
 
-    proc.Start($"clone {gitUrl}")
+        proc.Start($"clone {gitUrl}")
 
-    proc.WaitForExit(TimeSpan.MaxValue) |> ignore
+        proc.WaitForExit(TimeSpan.MaxValue) |> ignore
 
-    let stdErr = proc.StdErr.ReadAllText(Encoding.UTF8)
-    let stdOut = proc.StdOut.ReadAllText(Encoding.UTF8)
-    printfn $"%s{stdErr}"
-    printfn $"%s{stdOut}"
-    stdErr
+        let stdErr = proc.StdErr.ReadAllText(Encoding.UTF8)
+        let stdOut = proc.StdOut.ReadAllText(Encoding.UTF8)
+        printfn $"%s{stdErr}"
+        printfn $"%s{stdOut}"
+        stdErr
 
 let readOutputDirectory output =
     Regex.Match(output, "\'(?<OutputDirectory>.+?)\'").Groups["OutputDirectory"].Value
@@ -112,28 +112,10 @@ let readConfiguration () =
         Targets = targets
     }
 
-let (<!>) (a: 'a option) (b: unit -> 'a option) =
-    match a with
-    | Some a -> Some a
-    | None -> b ()
-
 [<RequireQualifiedAccess>]
 module List =
     let tryRemove (value: 'a) (list: 'a list) : 'a list * bool =
         List.foldBack (fun item (acc, found) -> if item = value then (acc, true) else (item :: acc, found)) list ([], false)
-
-[<RequireQualifiedAccess>]
-module Uri =
-    let getHost (uri: Uri) = uri.Host
-
-[<RequireQualifiedAccess>]
-module Regex =
-    let replace (pattern: string) (replacement: string) input =
-        Regex.Replace(input, pattern, replacement)
-
-[<RequireQualifiedAccess>]
-module Map =
-    let tryFind' m k = Map.tryFind k m
 
 let deductTargetDirectory (config: Configuration) (url: Uri) : string =
 
@@ -152,11 +134,11 @@ let deductTargetDirectory (config: Configuration) (url: Uri) : string =
 
 let urlFixes = [
     // https://xxxx@dev.azure.com/yyy/xxx/_git/lorem -> https://xxxx@dev.azure.com/yyy/xxx/_git/lorem
-    Regex.replace @"^(?<Before>https:\/\/)(?<User>.+?@)(?<After>dev\.azure\.com\/)" @"${Before}${After}"
+    Regex.replacePattern @"^(?<Before>https:\/\/)(?<User>.+?@)(?<After>dev\.azure\.com\/)" @"${Before}${After}"
     // https://xxx.visualstudio.com/ -> https://dev.azure.com/xxx/
-    Regex.replace @"https://(?<Organization>\w+)\.visualstudio\.com/" @"https://dev.azure.com/${Organization}/"
+    Regex.replacePattern @"https://(?<Organization>\w+)\.visualstudio\.com/" @"https://dev.azure.com/${Organization}/"
     // https://dev.azure.com/xxx/DefaultCollection/ -> https://dev.azure.com/xxx/DefaultCollection/
-    Regex.replace @"https://dev\.azure\.com/(?<Organization>\w+)/DefaultCollection/" @"https://dev.azure.com/${Organization}/"
+    Regex.replacePattern @"https://dev\.azure\.com/(?<Organization>\w+)/DefaultCollection/" @"https://dev.azure.com/${Organization}/"
 ]
 
 let fixGitUrl url =
@@ -184,7 +166,7 @@ let main argv =
 
         let gitUrl =
             if mergeRequest then
-                gitUrl.ToString() |> Regex.replace "/-/merge_requests/.*$" ".git" |> Uri
+                gitUrl.ToString() |> Regex.replacePattern "/-/merge_requests/.*$" ".git" |> Uri
             else
                 gitUrl
 
@@ -195,20 +177,20 @@ let main argv =
 
         printfn $"Cloning %s{string gitUrl} into %s{targetDirectory}"
 
-        let outputDirectory = (clone gitUrl targetDirectory) |> readOutputDirectory
+        let outputDirectory = (Process.gitClone gitUrl targetDirectory) |> readOutputDirectory
 
         let path = Path.Combine(targetDirectory, outputDirectory)
 
-        riderFixConfig path
+        Process.riderFixConfig path
 
         if mergeRequest then
-            rider path
+            Process.rider path
         else
 
-            explorer path
-            fork path
-            rider path
-            wt path
+            Process.explorer path
+            Process.fork path
+            Process.rider path
+            Process.wt path
 
         printfn $"Project cloned into %s{path}"
 

@@ -1,5 +1,6 @@
 {
   "Default": "D:\\GIT\\",
   "https://github.com": "D:\\GIT\\github\\",
-  "https://gitlab.com": "D:\\GIT\\gitlab\\"
+  "https://gitlab.com": "D:\\GIT\\gitlab\\",
+  "REGEX:^https://dev\\.azure\\.com/MyOrg/(?<ProjectName>\\w+)/.+$": "{{UserProfile}}\\Repositories\\MyOrg\\${ProjectName}\\"
 }

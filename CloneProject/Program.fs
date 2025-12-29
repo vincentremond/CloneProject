@@ -53,26 +53,64 @@ let rec tryLocateFile name directory =
         |> Option.bind (tryLocateFile name)
     )
 
-let config =
+type Configuration = {
+    Default: string
+    Targets: ConfigurationTarget list
+}
 
-    let fixConfigVariable map =
-        let fixes = [ "{{UserProfile}}", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ]
+and ConfigurationTarget = {
+    UrlPattern: UrlPattern
+    TargetDirectory: string
+}
 
-        let rec applyFixes _ (s: string) =
-            fixes
-            |> List.fold (fun acc (oldValue, replacement) -> acc |> String.replace oldValue replacement) s
+and [<RequireQualifiedAccess>] UrlPattern =
+    | StartsWith of string
+    | Regex of Regex
 
-        map |> Map.map applyFixes
+let readConfiguration () =
 
-    lazy
-        (let path =
-            (tryLocateFile "Targets.local.json" Environment.CurrentDirectory)
-            |> Option.defaultValue "Targets.json"
+    let fixes = [ "{{UserProfile}}", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ]
 
-         use file = File.OpenRead(path)
-         let result = JsonSerializer.Deserialize<Map<string, string>>(file)
-         let fixedConfig = result |> fixConfigVariable
-         fixedConfig)
+    let applyFixes (s: string) =
+        fixes
+        |> List.fold (fun acc (oldValue, replacement) -> acc |> String.replace oldValue replacement) s
+
+    let path =
+        (tryLocateFile "Targets.local.json" Environment.CurrentDirectory)
+        |> Option.defaultValue "Targets.json"
+
+    let defaultTarget, targets =
+        using (File.OpenRead(path)) JsonSerializer.Deserialize<Map<string, string>>
+        |> Map.fold
+            (fun (defaultTarget, targets) key value ->
+                match key, defaultTarget with
+                | "Default", None ->
+                    let fixedValue = value |> applyFixes
+                    Some fixedValue, targets
+                | "Default", Some _ -> failwith "Multiple Default targets found"
+                | _ ->
+                    let urlPattern =
+                        if key |> String.startsWithICIC "REGEX:" then
+                            let pattern = key.Substring("REGEX:".Length)
+                            UrlPattern.Regex(Regex(pattern, RegexOptions.IgnoreCase ||| RegexOptions.Compiled))
+                        else
+                            UrlPattern.StartsWith key
+
+                    defaultTarget,
+                    {
+                        UrlPattern = urlPattern
+                        TargetDirectory = value |> applyFixes
+                    }
+                    :: targets
+            )
+            (None, [])
+
+    {
+        Default =
+            defaultTarget
+            |> Option.defaultWith (fun () -> failwith "No Default target found")
+        Targets = targets
+    }
 
 let (<!>) (a: 'a option) (b: unit -> 'a option) =
     match a with
@@ -97,18 +135,20 @@ module Regex =
 module Map =
     let tryFind' m k = Map.tryFind k m
 
-let deductTargetDirectory (config: Map<string, string>) (url: Uri) : string option =
+let deductTargetDirectory (config: Configuration) (url: Uri) : string =
 
     let strUrl = url.ToString()
 
-    let tryFindForUrl =
-        config
-        |> Map.iterTryFindValue (fun k _v -> strUrl |> String.startsWithICIC k)
+    let rec loop targets =
+        match targets with
+        | [] -> config.Default
+        | target :: rest ->
+            match target.UrlPattern with
+            | UrlPattern.StartsWith prefix when strUrl |> String.startsWithICIC prefix -> target.TargetDirectory
+            | UrlPattern.Regex regex when regex.IsMatch(strUrl) -> regex.Replace(strUrl, target.TargetDirectory)
+            | _ -> loop rest
 
-    let defaultValue () =
-        "Default" |> (config |> Map.tryFind')
-
-    tryFindForUrl <!> defaultValue
+    loop config.Targets
 
 let urlFixes = [
     // https://xxxx@dev.azure.com/yyy/xxx/_git/lorem -> https://xxxx@dev.azure.com/yyy/xxx/_git/lorem
@@ -148,9 +188,10 @@ let main argv =
             else
                 gitUrl
 
+        let configuration = readConfiguration ()
+
         let targetDirectory =
-            deductTargetDirectory config.Value gitUrl
-            |> Option.defaultWith (fun () -> failwith "No target directory found")
+            deductTargetDirectory configuration gitUrl
 
         printfn $"Cloning %s{string gitUrl} into %s{targetDirectory}"
 

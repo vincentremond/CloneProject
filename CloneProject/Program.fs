@@ -24,8 +24,7 @@ module Process =
 
     let wt (path: string) = start "wt" path []
 
-    let riderFixConfig (path: string) =
-        start "RiderFixConfig" path [ path ]
+    let riderFixConfig (path: string) = start "RiderFixConfig" path [ path ]
 
     let gitClone gitUrl targetDirectory =
         use proc = new ProcessHost("git", targetDirectory)
@@ -112,11 +111,6 @@ let readConfiguration () =
         Targets = targets
     }
 
-[<RequireQualifiedAccess>]
-module List =
-    let tryRemove (value: 'a) (list: 'a list) : 'a list * bool =
-        List.foldBack (fun item (acc, found) -> if item = value then (acc, true) else (item :: acc, found)) list ([], false)
-
 let deductTargetDirectory (config: Configuration) (url: Uri) : string =
 
     let strUrl = url.ToString()
@@ -145,14 +139,12 @@ let fixGitUrl url =
     List.fold (fun url fixer -> fixer url) url urlFixes
 
 [<EntryPoint>]
-let main argv =
+let main args =
     try
-        let args, mergeRequest = argv |> Seq.toList |> List.tryRemove "--merge-request"
-
         let gitUrl =
             match args with
-            | [ arg ] -> arg
-            | [] -> ClipboardService.GetText()
+            | [| arg |] -> arg
+            | [||] -> ClipboardService.GetText()
             | _ -> failwith "Only one argument (git URL) is expected"
 
         let gitUrl = fixGitUrl gitUrl
@@ -164,33 +156,22 @@ let main argv =
                 printfn $"Cloning project from %s{gitUrl.ToString()}"
                 gitUrl
 
-        let gitUrl =
-            if mergeRequest then
-                gitUrl.ToString() |> Regex.replacePattern "/-/merge_requests/.*$" ".git" |> Uri
-            else
-                gitUrl
-
         let configuration = readConfiguration ()
 
-        let targetDirectory =
-            deductTargetDirectory configuration gitUrl
+        let targetDirectory = deductTargetDirectory configuration gitUrl
 
         printfn $"Cloning %s{string gitUrl} into %s{targetDirectory}"
 
-        let outputDirectory = (Process.gitClone gitUrl targetDirectory) |> readOutputDirectory
+        let outputDirectory =
+            (Process.gitClone gitUrl targetDirectory) |> readOutputDirectory
 
         let path = Path.Combine(targetDirectory, outputDirectory)
 
         Process.riderFixConfig path
-
-        if mergeRequest then
-            Process.rider path
-        else
-
-            Process.explorer path
-            Process.fork path
-            Process.rider path
-            Process.wt path
+        Process.explorer path
+        Process.fork path
+        Process.rider path
+        Process.wt path
 
         printfn $"Project cloned into %s{path}"
 

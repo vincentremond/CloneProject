@@ -1,0 +1,5 @@
+<Project>
+    <PropertyGroup Condition="$(NCrunch) == '1'">
+        <FscToolPath>C:\Program Files\Microsoft Visual Studio\18\Professional\Common7\IDE\CommonExtensions\Microsoft\FSharp\Tools</FscToolPath>
+    </PropertyGroup>
+</Project>

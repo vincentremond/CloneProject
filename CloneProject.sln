@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{0B626439
 		.editorconfig = .editorconfig
 		PUBLIC = PUBLIC
 		build.ps1 = build.ps1
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pinicola.FSharp", "Pinicola.FSharp", "{02A4B33E-B816-DE40-8E36-EB2BC0F2BBB4}"
@@ -19,6 +20,8 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Pinicola.FSharp", "Pinicola.FSharp\Pinicola.FSharp\Pinicola.FSharp.fsproj", "{93DABAE3-2E62-4CC5-A735-B4E656B15260}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Pinicola.FSharp.SpectreConsole", "Pinicola.FSharp\Pinicola.FSharp.SpectreConsole\Pinicola.FSharp.SpectreConsole.fsproj", "{42DB997C-935D-4184-A492-CE1ECEDB3363}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CloneProject.Tests", "CloneProject.Tests\CloneProject.Tests.fsproj", "{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +69,18 @@ Global
 		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Release|x64.Build.0 = Release|Any CPU
 		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Release|x86.ActiveCfg = Release|Any CPU
 		{42DB997C-935D-4184-A492-CE1ECEDB3363}.Release|x86.Build.0 = Release|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Debug|x64.Build.0 = Debug|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Debug|x86.Build.0 = Debug|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Release|x64.ActiveCfg = Release|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Release|x64.Build.0 = Release|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Release|x86.ActiveCfg = Release|Any CPU
+		{E0CA6D54-AC45-4CD6-A3EC-8EEECB1F4CB2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

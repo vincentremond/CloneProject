@@ -5,9 +5,9 @@ open System.Text
 open System.Text.Json
 open System.Text.RegularExpressions
 open System.Threading
-open System.Windows.Forms
 open Pinicola.FSharp
 open RunProcess
+open TextCopy
 
 let write path (contents: string) = File.WriteAllText(path, contents)
 
@@ -97,36 +97,18 @@ module Regex =
 module Map =
     let tryFind' m k = Map.tryFind k m
 
-let deductTargetDirectory (url: Uri) : string option =
+let deductTargetDirectory (config: Map<string, string>) (url: Uri) : string option =
 
     let strUrl = url.ToString()
 
     let tryFindForUrl =
-        config.Value
+        config
         |> Map.iterTryFindValue (fun k _v -> strUrl |> String.startsWithICIC k)
 
     let defaultValue () =
-        "Default" |> (config.Value |> Map.tryFind')
+        "Default" |> (config |> Map.tryFind')
 
     tryFindForUrl <!> defaultValue
-
-let runAsSTAThread<'a> (f: unit -> 'a) : 'a =
-    let mutable result = Unchecked.defaultof<'a>
-    let autoResetEvent = new AutoResetEvent(false)
-
-    let thread =
-        Thread(
-            ThreadStart(fun () ->
-                result <- f ()
-                autoResetEvent.Set() |> ignore
-            )
-        )
-
-    thread.SetApartmentState(ApartmentState.STA)
-    thread.Start()
-    autoResetEvent.WaitOne() |> ignore
-
-    result
 
 let urlFixes = [
     // https://xxxx@dev.azure.com/yyy/xxx/_git/lorem -> https://xxxx@dev.azure.com/yyy/xxx/_git/lorem
@@ -143,12 +125,13 @@ let fixGitUrl url =
 [<EntryPoint>]
 let main argv =
     try
-        let argv, mergeRequest = argv |> Seq.toList |> List.tryRemove "--merge-request"
+        let args, mergeRequest = argv |> Seq.toList |> List.tryRemove "--merge-request"
 
         let gitUrl =
-            argv
-            |> List.tryExactlyOne
-            |> Option.defaultWith (fun () -> runAsSTAThread Clipboard.GetText)
+            match args with
+            | [ arg ] -> arg
+            | [] -> ClipboardService.GetText()
+            | _ -> failwith "Only one argument (git URL) is expected"
 
         let gitUrl = fixGitUrl gitUrl
 
@@ -166,7 +149,7 @@ let main argv =
                 gitUrl
 
         let targetDirectory =
-            deductTargetDirectory gitUrl
+            deductTargetDirectory config.Value gitUrl
             |> Option.defaultWith (fun () -> failwith "No target directory found")
 
         printfn $"Cloning %s{string gitUrl} into %s{targetDirectory}"

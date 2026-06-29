@@ -17,7 +17,8 @@ module TargetDirectoryService =
             | target :: rest ->
                 match target.UrlPattern with
                 | UrlPattern.StartsWith prefix when strUrl |> String.startsWithICIC prefix -> target.TargetDirectory
-                | UrlPattern.Regex pattern when strUrl |> Regex.isMatchPattern pattern -> strUrl |> Regex.replacePattern pattern target.TargetDirectory
+                | UrlPattern.Regex pattern when strUrl |> Regex.isMatchPattern pattern ->
+                    strUrl |> Regex.replacePattern pattern target.TargetDirectory
                 | _ -> loop rest
 
         loop config.Targets

@@ -34,4 +34,3 @@ module Process =
         printfn $"%s{stdErr}"
         printfn $"%s{stdOut}"
         stdErr
-

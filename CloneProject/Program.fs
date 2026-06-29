@@ -19,7 +19,9 @@ module Program =
                 "Targets.local.json"
                 "Targets.json"
             ]
-            |> Option.defaultWith (fun () -> failwith "No configuration file found (Targets.local.json or Targets.json)")
+            |> Option.defaultWith (fun () ->
+                failwith "No configuration file found (Targets.local.json or Targets.json)"
+            )
 
         let configuration = ConfigurationReader.readFromFile configurationFile
         configuration

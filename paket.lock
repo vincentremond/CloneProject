@@ -15,7 +15,7 @@ NUGET
       OpenTelemetry.Extensions.Hosting (>= 1.15.3)
       OpenTelemetry.PersistentStorage.FileSystem (>= 1.0.3)
     coverlet.collector (10.0.1)
-    FSharp.Core (10.1.301)
+    FSharp.Core (11.0.100)
     Microsoft.ApplicationInsights (3.1.2)
       Azure.Monitor.OpenTelemetry.Exporter (>= 1.8)
     Microsoft.Bcl.AsyncInterfaces (10.0.9)

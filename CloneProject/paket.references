@@ -1,3 +1,5 @@
 RunProcess
 FSharp.Core
 TextCopy
+Pinicola.FSharp.SpectreConsole
+Pinicola.FSharp
